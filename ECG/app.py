@@ -1,65 +1,34 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 import pickle
 
+# Load the trained model from the pickle file
+with open('ECG.pkl', 'rb') as f:
+    model = pickle.load(f)
 
-st.sidebar.header('User Input Features')
+# Create the Streamlit app
+st.title('ECG Classification')
+st.write('Enter the following features to classify ECG results:')
+age = st.sidebar.number_input('Enter your age: ')
 
-# Collects user input features into dataframe
+sex = st.sidebar.selectbox('Sex', (0, 1))
+cp = st.sidebar.selectbox('Chest pain type', (0, 1, 2, 3))
+tres = st.sidebar.number_input('Resting blood pressure: ')
+res = st.sidebar.number_input('Resting electrocardiographic results: ')
+tha = st.sidebar.number_input('Maximum heart rate achieved: ')
+exa = st.sidebar.selectbox('Exercise induced angina: ', (0, 1))
+old = st.sidebar.number_input('oldpeak ')
+slope = st.sidebar.number_input('he slope of the peak exercise ST segmen: ')
+ca = st.sidebar.selectbox('number of major vessels', (0, 1, 2, 3))
+thal = st.sidebar.selectbox('thal', (0, 1, 2))
 
-def user_input_features():
-    age = st.sidebar.number_input('Enter your age: ')
+# Create a button to make the prediction
+if st.button('Predict'):
+    # Make the prediction using the input values
+    features = [[age,sex, cp, tres,res,tha,exa,old,slope,ca,thal]]
+    result = model.predict(features)[0]
 
-    sex  = st.sidebar.selectbox('Sex',(0,1))
-    cp = st.sidebar.selectbox('Chest pain type',(0,1,2,3))
-    # tres = st.sidebar.number_input('Resting blood pressure: ')
-    chol = st.sidebar.number_input('Serum cholestoral in mg/dl: ')
-    fbs = st.sidebar.selectbox('Fasting blood sugar',(0,1))
-    res = st.sidebar.number_input('Resting electrocardiographic results: ')
-    tha = st.sidebar.number_input('Maximum heart rate achieved: ')
-    exa = st.sidebar.selectbox('Exercise induced angina: ',(0,1))
-    old = st.sidebar.number_input('oldpeak ')
-    slope = st.sidebar.number_input('he slope of the peak exercise ST segmen: ')
-    ca = st.sidebar.selectbox('number of major vessels',(0,1,2,3))
-    thal = st.sidebar.selectbox('thal',(0,1,2))
-
-    data = {'age': age,
-            'sex': sex,
-            'cp': cp,
-            'chol': chol,
-            'fbs': fbs,
-            'restecg': res,
-            'thalach':tha,
-            'exang':exa,
-            'oldpeak':old,
-            'slope':slope,
-            'ca':ca,
-            'thal':thal
-                }
-    features = pd.DataFrame(data, index=[0])
-    return features
-input_df = user_input_features()
-
-# Combines user input features with entire dataset
-# This will be useful for the encoding phase
-heart_dataset = pd.read_csv('heart.csv')
-heart_dataset = heart_dataset.drop(columns=['target'])
-
-df = pd.concat([input_df,heart_dataset],axis=0)
-df = pd.get_dummies(df, columns = ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal'])
-
-df = df[:1] # Selects only the first row (the user input data)
-
-st.write(input_df)
-# Reads in saved classification model
-load_clf = pickle.load(open('ECG.pkl', 'rb'))
-prediction=load_clf.predict(df)
-prediction_probability=load_clf.predict_proba(df)
-
-
-st.subheader('Prediction')
-st.write(prediction)
-
-st.subheader('Prediction Probability')
-st.write(prediction_probability)
+    # Display the prediction
+    if result == 0:
+        st.write('The ECG results indicate Patient Has no heart disease.')
+    else:
+        st.write('The ECG results indicate  Patient Has heart disease.')
