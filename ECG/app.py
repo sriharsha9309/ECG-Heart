@@ -2,8 +2,7 @@ import streamlit as st
 import pickle
 
 # Load the trained model from the pickle file
-with open("ECG-Heart/ECG.pkl", "rb") as f:
-    model = pickle.load(f)
+movies=pickle.load(open('ECG-Heart/ECG.pkl', 'rb'))
 
 # Create the Streamlit app
 st.title('ECG Classification')
